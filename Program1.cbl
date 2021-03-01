@@ -43,6 +43,10 @@
        01 ws-report-heading.
          05 filler                 pic x(28)    value 
          "Kaifkhan Vakil, Assignment 4".
+         05 filler                 pic x(15) value spaces.
+         05 filler                 pic x(8)  value "20210411".
+         05 filler                 pic x(23) value spaces.
+         05 filler                 pic x(7) value "1951043".
          
        01 ws-report-heading1.
          05 filler                 pic x(30)   value spaces.
@@ -181,6 +185,19 @@
          05 ws-prog-counter          pic 99 value 0.
          05 ws-jr-prog-counter       pic 99 value 0.
          05 ws-unclaissified-counter pic 99 value 0.
+         05 ws-analyst-rep-counter pic 99 value 0.
+         05 ws-sen-prog-rep-counter pic 99 value 0.
+         05 ws-prog-rep-counter pic 99 value 0.
+         05 ws-jr-prog-rep-counter pic 99 value 0.
+         05 ws-pay-analyst         pic 9(7)v99 value 0.
+         05 ws-pay-sen-prog        pic 9(7)v99 value 0.
+         05 ws-pay-prog            pic 9(7)v99 value 0.
+         05 ws-jr-prog             pic 9(7)v99 value 0.
+         05 ws-interim-analyst     pic 9(7)v99 value 0.
+         05 ws-interim-sen-prog    pic 9(7)v99 value 0.
+         05 ws-interim-prog        pic 9(7)v99 value 0.
+         05 ws-interim-jr-prog     pic 9(7)v99 value 0.
+
         
        01 ws-flags.
          05 ws-eof-flag            pic x   value "n".
@@ -205,8 +222,11 @@
            open output output-file.
            move ws-file-opened to ws-eof-flag.
 
+           
+           
            write output-line from ws-report-heading
-           after advancing ws-one line.
+           before advancing ws-two lines.
+
 
            read input-file
            at end
@@ -215,7 +235,25 @@
            perform 400-process-pages
            until ws-eof-flag equals   ws-file-empty.
 
+           compute ws-interim-analyst rounded = ws-pay-analyst / 
+           ws-analyst-rep-counter.
+           compute ws-interim-sen-prog rounded = ws-pay-sen-prog /
+             ws-sen-prog-rep-counter.
+           compute ws-interim-prog rounded = ws-pay-prog /
+             ws-prog-rep-counter.
+           compute ws-interim-jr-prog rounded = ws-jr-prog /
+             ws-jr-prog-rep-counter.
 
+           move ws-interim-analyst to ws-analyst-average.
+           move ws-interim-sen-prog to ws-sen-prog-average.
+           move ws-interim-prog to ws-prog-average.
+           move ws-interim-jr-prog to ws-jr-prog-average.
+
+           write output-line from ws-total-line1
+           after advancing ws-one line.
+           write output-line from ws-total-line2.
+
+           
 
            close output-file, input-file.
            goback.
@@ -225,6 +263,7 @@
            move ws-page-count to ws-page-number.
 
            if(ws-page-count > ws-one) then 
+
                write output-line from ws-report-heading1
                after advancing page
            else 
@@ -266,6 +305,8 @@
                 compute ws-new-salary-calc rounded = ws-pay-increase + 
                 il-present-salary
                 add 1 to ws-analyst-counter 
+                   add 1 to ws-analyst-rep-counter
+                add ws-pay-increase to ws-pay-analyst
              else
                 if((il-service-years>=7) and (il-service-years <=15))
                      then
@@ -277,6 +318,8 @@
                          ws-pay-increase +
                          il-present-salary
                        add 1 to ws-sen-prog-counter
+                       add 1 to ws-sen-prog-rep-counter
+                       add ws-pay-increase to ws-pay-sen-prog
                 else 
                    if ((il-service-years<7) and (il-service-years>2))
                         then
@@ -289,6 +332,8 @@
                              ws-pay-increase +
                              il-present-salary
                            add 1 to ws-prog-counter
+                           add 1 to ws-prog-rep-counter
+                           add ws-pay-increase to ws-pay-prog
                    else move spaces to ws-position-contnt
            move 0 to ws-pay-increase
            add 1 to ws-unclaissified-counter
@@ -310,6 +355,8 @@
                      +
                      il-present-salary
                   add 1 to ws-prog-counter
+                   add 1 to ws-prog-rep-counter
+                   add ws-pay-increase to ws-pay-prog
 
                else
                    if ((il-service-years<=10) and (il-service-years>4)) 
@@ -324,6 +371,8 @@
                          ws-pay-increase +
                          il-present-salary
                        add 1 to ws-jr-prog-counter
+                       add 1 to ws-jr-prog-rep-counter
+                       add ws-pay-increase to ws-jr-prog
                    else
                        if (il-service-years <=4 ) then
                            move spaces to ws-position-contnt
