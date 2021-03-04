@@ -121,6 +121,9 @@
                                                    value 0.
          05 filler                     pic x(2)    value spaces.
          05 ws-increase-percentage     pic z9.9.
+         05 ws-increase-percentage-r redefines
+            ws-increase-percentage.
+               10 ws-blank-line        pic x(3).
          05 ws-sign                    pic x       value "%".
          05 filler                     pic x(3)    value spaces.
          05 ws-increase-pay            pic $$$,$$9.99+.
@@ -248,7 +251,7 @@
 
 
        procedure division.
-
+       000-salary-report.
       *    Open files
            perform 010-open-files.
            move ws-file-opened         to ws-eof-flag.
@@ -354,6 +357,7 @@
                        else
                            move spaces to ws-position-contnt
                            move 0 to ws-pay-increase
+                           move 0 to ws-percent-holder
                            add 1 to ws-unclaissified-counter
                            compute ws-new-salary-calc rounded =
                              ws-pay-increase +
@@ -399,6 +403,7 @@
                        if (il-service-years <= 4) then
                            move spaces to ws-position-contnt
                            move 0 to ws-pay-increase
+                           move 0 to ws-percent-holder
                            compute ws-new-salary-calc rounded =
                              ws-pay-increase +
                              il-present-salary
@@ -416,8 +421,13 @@
            move il-service-years       to ws-employee-years.
            move il-present-salary      to ws-present-salary.
            move ws-position-contnt     to ws-employee-position.
-           move ws-percent-sign        to ws-sign.
-           move ws-percent-holder      to ws-increase-percentage.
+           if(ws-percent-holder equals 0) then
+               move spaces to ws-blank-line
+           else
+               move ws-percent-holder to ws-increase-percentage
+               move ws-percent-sign to ws-sign
+           end-if.
+          
            move ws-pay-increase        to ws-increase-pay.
            move ws-new-salary-calc     to ws-new-salary.
            move ws-dollar-sign-cont    to ws-dollar-sign.
